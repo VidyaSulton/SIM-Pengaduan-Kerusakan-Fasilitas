@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use PDO;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
     ];
 
     /**
@@ -44,5 +46,24 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // Relasi ke Laporan sebagai Admin
+    public function laporanSebagaiAdmin(){
+        return $this->hasMany(Laporan::class, 'id_admin', 'id');
+    }
+    // Relasi ke Laporan sebagai Teknisi
+    public function laporanSebagaiTeknisi(){
+        return $this->hasMany(Laporan::class, 'id_teknisi', 'id');
+    }
+
+    // Cek apakah user adalah Admin
+    public function isAdmin(){
+        return $this->role === 'admin';
+    }
+
+    // Cek apakah user adalah Teknisi
+    public function isTeknisi(){
+        return $this->role === 'teknisi';
     }
 }
