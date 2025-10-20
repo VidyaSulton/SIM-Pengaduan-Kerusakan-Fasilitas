@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\LaporanController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::post('/pengaduan/store', [LaporanController::class, 'store'])->name('pengaduan.store');
 
 Route::get("/track", function(){
     return view("track");
