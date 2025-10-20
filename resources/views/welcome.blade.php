@@ -131,41 +131,176 @@
         <div class="max-w-xl mx-auto px-4">
             <div class="bg-white border rounded-lg p-6 shadow">
                 <h2 class="text-2xl font-semibold mb-6">Formulir Pengaduan Kerusakan</h2>
-                <form action="/laporan/submit" method="POST" enctype="multipart/form-data" class="space-y-6">
+                
+                {{-- Alert Success --}}
+                    @if (session('success'))
+                    <div class="mb-6 px-4 py-3 bg-green-50 border border-green-200 text-green-800 rounded-lg">
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold">Laporan Berhasil Dikirim!</p>
+                                <p class="text-sm">{{ session('success') }}</p>
+                                @if (session('no_tiket'))
+                                <p class="mt-2 text-sm font-mono bg-white px-3 py-2 rounded border border-green-300">
+                                    ID Laporan: <strong>{{ session('no_tiket') }}</strong>
+                                </p>
+                                <p class="text-xs mt-1">Simpan ID ini untuk melacak laporan Anda.</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Alert Errors --}}
+                    @if ($errors->any())
+                    <div class="mb-6 px-4 py-3 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+                        <div class="flex items-start gap-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div>
+                                <p class="font-semibold">Terjadi Kesalahan:</p>
+                                <ul class="mt-1 text-sm list-disc list-inside space-y-1">
+                                    @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                <form action="{{ route('pengaduan.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                     <!-- CSRF Token for Laravel -->
-                    <!-- @csrf -->
+                    @csrf
+
+                    {{-- No Tiker --}}
+                    <div>
+                        <label for="no_tiket" class="block font-medium mb-1">No Tiket</label>
+                        <input 
+                            type="text" 
+                            id="no_tiket" 
+                            name="no_tiket" 
+                            value="{{ old('no_tiket', $no_tiket ?? '') }}"
+                            placeholder="Otomatis terisi setelah pengajuan" 
+                            readonly 
+                            class="w-full px-2 py-1 border rounded-lg bg-[#e5e7eb] cursor-not-allowed"
+                    >
+
+                    
                     <!-- Nama -->
                     <div>
-                        <label for="name" class="block font-medium mb-1">Nama Anda</label>
-                        <input type="text" id="name" name="name" placeholder="Masukkan nama lengkap" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
+                        <label for="nama_pelapor" class="block font-medium mb-1">Nama Anda <span class="text-red-500">*</span></label>
+                        <input 
+                            type="text" 
+                            id="nama_pelapor" 
+                            name="nama_pelapor" 
+                            value="{{ old('nama_pelapor') }}"
+                            placeholder="Masukkan nama lengkap" 
+                            required 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('nama_pelapor') border-red-500 @enderror"
+                        >
+                        @error('nama_pelapor')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <!-- Judul Laporan -->
+                    
+                    {{-- Email --}}
                     <div>
-                        <label for="title" class="block font-medium mb-1">Judul Laporan</label>
-                        <input type="text" id="title" name="title" placeholder="Contoh: AC di Ruang Rapat Mati" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
+                        <label for="email_pelapor" class="block font-medium mb-1">Email</label>
+                        <input 
+                            type="email" 
+                            id="email_pelapor" 
+                            name="email_pelapor" 
+                            value="{{ old('email_pelapor') }}"
+                            placeholder="contoh@email.com" 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('email_pelapor') border-red-500 @enderror"
+                        >
+                        @error('email_pelapor')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <!-- Kategori Fasilitas -->
+
+                    {{-- Kontak --}}
                     <div>
-                        <label for="category" class="block font-medium mb-1">Kategori Fasilitas</label>
-                        <select id="category" name="category" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
-                            <option value="">Pilih kategori fasilitas</option>
-                            <option value="ac">AC & Pendingin</option>
-                            <option value="listrik">Listrik & Lampu</option>
-                            <option value="sanitasi">Sanitasi & Air</option>
-                            <option value="furniture">Furniture</option>
-                            <option value="elektronik">Elektronik</option>
-                            <option value="bangunan">Bangunan & Struktur</option>
-                        </select>
+                        <label for="kontak" class="block font-medium mb-1">No. Handphone / WhatsApp</label>
+                        <input 
+                            type="text" 
+                            id="kontak" 
+                            name="kontak" 
+                            value="{{ old('kontak') }}"
+                            placeholder="081234567890" 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('kontak') border-red-500 @enderror"
+                        >
+                        @error('kontak')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <!-- Lokasi -->
+
+                    {{-- Nama Barang/Fasilitas --}}
                     <div>
-                        <label for="location" class="block font-medium mb-1">Lokasi Detail</label>
-                        <input type="text" id="location" name="location" placeholder="Contoh: Gedung A, Lantai 2, Ruang Rapat 201" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1]">
+                        <label for="nama_barang" class="block font-medium mb-1">Nama Barang/Fasilitas yang Rusak <span class="text-red-500">*</span></label>
+                        <input 
+                            type="text" 
+                            id="nama_barang" 
+                            name="nama_barang" 
+                            value="{{ old('nama_barang') }}"
+                            placeholder="Contoh: AC di Ruang Kelas, Proyektor di Lab Komputer" 
+                            required 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('nama_barang') border-red-500 @enderror"
+                        >
+                        @error('nama_barang')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
-                    <!-- Deskripsi -->
+
+                   {{-- Lokasi --}}
                     <div>
-                        <label for="description" class="block font-medium mb-1">Deskripsi Lengkap Kerusakan</label>
-                        <textarea id="description" name="description" placeholder="Jelaskan detail kerusakan yang terjadi..." rows="5" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1]"></textarea>
+                        <label for="lokasi" class="block font-medium mb-1">Lokasi Detail <span class="text-red-500">*</span></label>
+                        <input 
+                            type="text" 
+                            id="lokasi" 
+                            name="lokasi" 
+                            value="{{ old('lokasi') }}"
+                            placeholder="Contoh: Gedung A, Lantai 2, Ruang 7" 
+                            required 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('lokasi') border-red-500 @enderror"
+                        >
+                        @error('lokasi')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    {{-- Tingkat Urgensi --}}
+                    <div>
+                        <label for="tingkat_urgensi" class="block font-medium mb-1">Tingkat Urgensi <span class="text-red-500">*</span></label>
+                       <select name="tingkat_urgensi" id="tingkat_urgensi" required class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('tingkat_urgensi') border-red-500 @enderror">
+                        <option value="">Pilih Tingkat Urgensi</option>
+                        <option value="Rendah" {{ old('tingkat_urgensi') == 'Rendah' ? 'selected' : '' }}>Rendah</option>
+                        <option value="Sedang" {{ old('tingkat_urgensi') == 'Sedang' ? 'selected' : '' }} selected>Sedang</option>
+                        <option value="Tinggi" {{ old('tingkat_urgensi') == 'Tinggi' ? 'selected' : '' }}>Tinggi</option>
+                    </select>
+                    @error('tingkat_urgensi')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                    </div>
+
+                    {{-- Deskripsi --}}
+                    <div>
+                        <label for="deskripsi" class="block font-medium mb-1">Deskripsi Lengkap Kerusakan <span class="text-red-500">*</span></label>
+                        <textarea 
+                            id="deskripsi" 
+                            name="deskripsi" 
+                            placeholder="Jelaskan detail kerusakan yang terjadi. Contoh: Lampu di kelas xx mati." 
+                            rows="5" 
+                            required 
+                            class="w-full px-3 py-2 border rounded-lg bg-[#f3f3f5] focus:outline-none focus:ring-2 focus:ring-[#6366f1] @error('deskripsi') border-red-500 @enderror"
+                        >{{ old('deskripsi') }}</textarea>
+                        @error('deskripsi')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <!-- Upload Foto -->
                     <div>
@@ -178,6 +313,9 @@
                             <p class="text-xs text-[#717182] mt-1">PNG, JPG atau JPEG (Maks. 5MB)</p>
                             <input type="file" id="photo" name="photo" accept="image/*" class="hidden">
                         </div>
+                        @error('foto')
+                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
                     </div>
                     <!-- Submit Button -->
                     <button type="submit" class="w-full px-6 py-3 bg-[#6366f1] text-white rounded-lg hover:bg-[#5558e3] transition">Kirim Laporan</button>
@@ -209,18 +347,59 @@
         const uploadArea = document.getElementById('upload-area');
         const fileInput = document.getElementById('photo');
         if (uploadArea && fileInput) {
-            uploadArea.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    uploadArea.innerHTML = `
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                        <p class="text-sm text-green-600">File terpilih: ${e.target.files[0].name}</p>
-                    `;
+           // Click area untuk trigger file input
+                uploadArea.addEventListener('click', () => fileInput.click());
+                // Drag & drop
+                uploadArea.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    uploadArea.classList.add('border-[#6366f1]', 'bg-blue-50');
+                });
+                uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('border-[#6366f1]', 'bg-blue-50');
+                });
+                uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('border-[#6366f1]', 'bg-blue-50');
+            
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    updateUploadUI(e.dataTransfer.files[0]);
                 }
             });
+            // File change
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    updateUploadUI(e.target.files[0]);
+                }
+            });
+            // Function update UI setelah file dipilih
+            function updateUploadUI(file) {
+            const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+            uploadArea.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                <p class="text-sm text-green-600 font-semibold">${file.name}</p>
+                <p class="text-xs text-[#717182] mt-1">Ukuran: ${fileSize} MB</p>
+                <button type="button" onclick="resetUpload()" class="mt-3 text-xs text-red-600 hover:underline">Ganti Foto</button>
+            `;
         }
+    }
+        
+            // Function reset upload
+            function resetUpload() {
+                const uploadArea = document.getElementById('upload-area');
+                const fileInput = document.getElementById('foto');
+                
+                fileInput.value = '';
+                uploadArea.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-[#717182] mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <p class="text-sm text-[#717182]">Klik untuk mengunggah foto atau seret file ke sini</p>
+                    <p class="text-xs text-[#717182] mt-1">PNG, JPG atau JPEG (Maks. 2MB)</p>
+                `;
+            }
     </script>
     @if (Route::has('login'))
     <div class="h-14.5 hidden lg:block"></div>
